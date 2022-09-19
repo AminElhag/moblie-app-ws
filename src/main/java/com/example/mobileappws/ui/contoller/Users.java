@@ -26,12 +26,14 @@ public class Users {
         return res;
     }
 
-    @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @PostMapping(
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public UserRes createUser(@RequestBody UserDetailsRequestModel userDetailsRequest) {
 
         if (userDetailsRequest.getFirstName() == null || userDetailsRequest.getLastName() == null || userDetailsRequest.getEmail() == null || userDetailsRequest.getPassword() == null)
             throw new UserServiceException(ErrorMessages.MISSING_REQUIRED_FILED.getErrorMessage());
-        System.out.println(userDetailsRequest);
+
 
         UserRes userRes = new UserRes();
 
@@ -44,9 +46,21 @@ public class Users {
         return userRes;
     }
 
-    @PutMapping
-    public String updateUser() {
-        return "Update User Call !!";
+    @PutMapping(
+            path = "/{id}",
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
+    )
+    public UserRes updateUser(@PathVariable String id, @RequestBody UserDetailsRequestModel requestModel) {
+        UserRes userRes = new UserRes();
+
+        UserDto userDto = new UserDto();
+        BeanUtils.copyProperties(requestModel, userDto);
+
+        UserDto user = userService.updateUser(id,userDto);
+        BeanUtils.copyProperties(user, userRes);
+
+        return userRes;
     }
 
     @DeleteMapping
