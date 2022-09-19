@@ -6,6 +6,7 @@ import com.example.mobileappws.ui.model.resposne.UserRes;
 import com.example.mobileappws.ui.shared.dto.UserDto;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,7 +16,10 @@ public class Users {
     UserService userService;
 
 
-    @GetMapping(path = "/{id}")
+    @GetMapping(
+            path = "/{id}",
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
+    )
     public UserRes getUser(@PathVariable String id) {
         UserRes res = new UserRes();
         UserDto userDto = userService.getUserDtoById(id);
@@ -23,7 +27,10 @@ public class Users {
         return res;
     }
 
-    @PostMapping
+    @PostMapping(
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
+    )
     public UserRes createUser(@RequestBody UserDetailsRequestModel userDetailsRequestModel) {
 
         System.out.println(userDetailsRequestModel);
