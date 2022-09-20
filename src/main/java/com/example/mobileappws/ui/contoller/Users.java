@@ -3,8 +3,7 @@ package com.example.mobileappws.ui.contoller;
 import com.example.mobileappws.exception.UserServiceException;
 import com.example.mobileappws.service.UserService;
 import com.example.mobileappws.ui.model.request.UserDetailsRequestModel;
-import com.example.mobileappws.ui.model.resposne.ErrorMessages;
-import com.example.mobileappws.ui.model.resposne.UserRes;
+import com.example.mobileappws.ui.model.resposne.*;
 import com.example.mobileappws.ui.shared.dto.UserDto;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,14 +56,18 @@ public class Users {
         UserDto userDto = new UserDto();
         BeanUtils.copyProperties(requestModel, userDto);
 
-        UserDto user = userService.updateUser(id,userDto);
+        UserDto user = userService.updateUser(id, userDto);
         BeanUtils.copyProperties(user, userRes);
 
         return userRes;
     }
 
-    @DeleteMapping
-    public String deleteUser() {
-        return "Delete User Call !!";
+    @DeleteMapping(path = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public OperationStatusModel deleteUser(@PathVariable String id) {
+        OperationStatusModel operationStatus = new OperationStatusModel();
+        operationStatus.setOperationName(OperationName.DELETE.name());
+        userService.deleteUser(id);
+        operationStatus.setOperationStatue(OperationStatus.SUCCESS.name());
+        return operationStatus;
     }
 }
