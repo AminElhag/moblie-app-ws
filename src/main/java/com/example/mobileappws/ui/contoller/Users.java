@@ -10,12 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
 @RequestMapping("users")
 public class Users {
     @Autowired
     UserService userService;
-
 
     @GetMapping(path = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public UserRes getUser(@PathVariable String id) {
@@ -23,6 +25,23 @@ public class Users {
         UserDto userDto = userService.getUserDtoById(id);
         BeanUtils.copyProperties(userDto, res);
         return res;
+    }
+
+    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public List<UserRes> getUsers(
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "limit", defaultValue = "10") int limit
+    ) {
+        List<UserRes> userResList = new ArrayList<>();
+
+        List<UserDto> users = userService.getUsers(page, limit);
+
+        for (UserDto userDto : users) {
+            UserRes res = new UserRes();
+            BeanUtils.copyProperties(userDto, res);
+            userResList.add(res);
+        }
+        return userResList;
     }
 
     @PostMapping(
