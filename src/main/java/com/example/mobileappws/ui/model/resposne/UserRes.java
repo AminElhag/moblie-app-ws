@@ -1,11 +1,13 @@
 package com.example.mobileappws.ui.model.resposne;
 
+import java.util.List;
+
 public class UserRes {
     private String userId;
     private String firstName;
     private String lastName;
     private String email;
-
+    private List<AddressRes> address;
 
     public String getFirstName() {
         return firstName;
@@ -37,5 +39,13 @@ public class UserRes {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public List<AddressRes> getAddress() {
+        return address;
+    }
+
+    public void setAddress(List<AddressRes> address) {
+        this.address = address;
     }
 }

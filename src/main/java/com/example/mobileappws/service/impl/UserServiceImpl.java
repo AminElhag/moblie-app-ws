@@ -6,7 +6,9 @@ import com.example.mobileappws.io.repositories.UserRepository;
 import com.example.mobileappws.service.UserService;
 import com.example.mobileappws.ui.model.resposne.ErrorMessages;
 import com.example.mobileappws.ui.shared.Utils;
+import com.example.mobileappws.ui.shared.dto.AddressDto;
 import com.example.mobileappws.ui.shared.dto.UserDto;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -37,21 +39,27 @@ public class UserServiceImpl implements UserService {
 
         if (repository.findByEmail(userDto.getEmail()) != null) throw new RuntimeException("Record already exist !!");
 
-        UserEntity userEntity = new UserEntity();
-        BeanUtils.copyProperties(userDto, userEntity);
-        userEntity.setUserId(utils.generateUserId(30));
+        ModelMapper mapper = new ModelMapper();
+
+        for (int i = 0; i < userDto.getAddress().size(); i++) {
+            AddressDto addressDto = userDto.getAddress().get(i);
+            addressDto.setUserDetails(userDto);
+            addressDto.setAddressId(utils.generateRandomId(30));
+            userDto.getAddress().set(i,addressDto);
+        }
+
+        UserEntity userEntity = mapper.map(userDto, UserEntity.class);
+        userEntity.setUserId(utils.generateRandomId(30));
         userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
 
-        UserEntity storeUserDetails = repository.save(userEntity);
+        com.example.mobileappws.io.entity.UserEntity storeUserDetails = repository.save(userEntity);
 
-        UserDto returnDto = new UserDto();
-        BeanUtils.copyProperties(storeUserDetails, returnDto);
-        return returnDto;
+        return mapper.map(storeUserDetails, UserDto.class);
     }
 
     @Override
     public UserDto getUserDtoByEmail(String email) {
-        UserEntity user = repository.findByEmail(email);
+        com.example.mobileappws.io.entity.UserEntity user = repository.findByEmail(email);
         if (user == null) throw new UsernameNotFoundException(email);
         UserDto userDto = new UserDto();
         BeanUtils.copyProperties(user, userDto);
@@ -60,7 +68,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserDtoById(String id) {
-        UserEntity user = repository.findByUserId(id);
+        com.example.mobileappws.io.entity.UserEntity user = repository.findByUserId(id);
         if (user == null) throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
         UserDto userDto = new UserDto();
         BeanUtils.copyProperties(user, userDto);
@@ -71,12 +79,12 @@ public class UserServiceImpl implements UserService {
     public UserDto updateUser(String id, UserDto userDto) {
         UserDto user = new UserDto();
 
-        UserEntity entity = repository.findByUserId(id);
+        com.example.mobileappws.io.entity.UserEntity entity = repository.findByUserId(id);
         if (entity == null) throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
 
         entity.setFirstName(userDto.getFirstName());
         entity.setLastName(userDto.getLastName());
-        UserEntity save = repository.save(entity);
+        com.example.mobileappws.io.entity.UserEntity save = repository.save(entity);
 
         BeanUtils.copyProperties(save, user);
         return user;
@@ -84,7 +92,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Void deleteUser(String id) {
-        UserEntity entity = repository.findByUserId(id);
+        com.example.mobileappws.io.entity.UserEntity entity = repository.findByUserId(id);
         if (entity == null) throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
 
         repository.delete(entity);
@@ -96,10 +104,10 @@ public class UserServiceImpl implements UserService {
         List<UserDto> users = new ArrayList<>();
 
         Pageable pageable = PageRequest.of(page, limit);
-        Page<UserEntity> entityPage = repository.findAll(pageable);
-        List<UserEntity> usersEntity = entityPage.getContent();
+        Page<com.example.mobileappws.io.entity.UserEntity> entityPage = repository.findAll(pageable);
+        List<com.example.mobileappws.io.entity.UserEntity> usersEntity = entityPage.getContent();
 
-        for (UserEntity user : usersEntity) {
+        for (com.example.mobileappws.io.entity.UserEntity user : usersEntity) {
             UserDto dto = new UserDto();
             BeanUtils.copyProperties(user, dto);
             users.add(dto);
@@ -109,7 +117,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        UserEntity entity = repository.findByEmail(email);
+        com.example.mobileappws.io.entity.UserEntity entity = repository.findByEmail(email);
         if (entity == null) throw new UsernameNotFoundException(email);
         return new User(entity.getEmail(), entity.getEncryptedPassword(), new ArrayList<>());
     }

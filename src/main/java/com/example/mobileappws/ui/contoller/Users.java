@@ -1,15 +1,20 @@
 package com.example.mobileappws.ui.contoller;
 
 import com.example.mobileappws.exception.UserServiceException;
+import com.example.mobileappws.service.AddressService;
 import com.example.mobileappws.service.UserService;
 import com.example.mobileappws.ui.model.request.UserDetailsRequestModel;
 import com.example.mobileappws.ui.model.resposne.*;
+import com.example.mobileappws.ui.shared.dto.AddressDto;
 import com.example.mobileappws.ui.shared.dto.UserDto;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +23,9 @@ import java.util.List;
 public class Users {
     @Autowired
     UserService userService;
+    @Autowired
+    AddressService addressService;
+    ModelMapper mapper = new ModelMapper();
 
     @GetMapping(path = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public UserRes getUser(@PathVariable String id) {
@@ -52,16 +60,11 @@ public class Users {
         if (userDetailsRequest.getFirstName() == null || userDetailsRequest.getLastName() == null || userDetailsRequest.getEmail() == null || userDetailsRequest.getPassword() == null)
             throw new UserServiceException(ErrorMessages.MISSING_REQUIRED_FILED.getErrorMessage());
 
-
-        UserRes userRes = new UserRes();
-
-        UserDto userDto = new UserDto();
-        BeanUtils.copyProperties(userDetailsRequest, userDto);
+        UserDto userDto = mapper.map(userDetailsRequest, UserDto.class);
 
         UserDto createdUser = userService.createUser(userDto);
-        BeanUtils.copyProperties(createdUser, userRes);
 
-        return userRes;
+        return mapper.map(createdUser, UserRes.class);
     }
 
     @PutMapping(
@@ -88,5 +91,35 @@ public class Users {
         userService.deleteUser(id);
         operationStatus.setOperationStatue(OperationStatus.SUCCESS.name());
         return operationStatus;
+    }
+
+    @GetMapping(path = "/{userId}/addresses", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public List<AddressRes> getAddresses(@PathVariable String userId) {
+        List<AddressRes> addressResList = new ArrayList<>();
+
+        List<AddressDto> addressDtos = addressService.getAddresses(userId);
+
+        if (addressDtos == null || addressDtos.isEmpty())
+            throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+
+        Type type = new TypeToken<List<AddressRes>>() {
+        }.getType();
+        addressResList = mapper.map(addressDtos, type);
+
+        return addressResList;
+    }
+
+    @GetMapping(path = "/{userId}/addresses/{addressId}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public AddressRes getAddress(@PathVariable String userId, @PathVariable String addressId) {
+        AddressRes addressRes = new AddressRes();
+
+        AddressDto addressDto = addressService.getAddress(userId, addressId);
+
+        if (addressDto == null)
+            throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+
+        addressRes = mapper.map(addressDto, AddressRes.class);
+
+        return addressRes;
     }
 }
