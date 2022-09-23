@@ -1,11 +1,9 @@
 package com.example.mobileappws.io.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 @Entity(name = "user")
 public class UserEntity implements Serializable {
@@ -35,6 +33,9 @@ public class UserEntity implements Serializable {
 
     @Column(nullable = false)
     private boolean emailVerificationStatus = false;
+
+    @OneToMany(mappedBy = "userDetails", cascade = CascadeType.ALL)
+    private List<AddressEntity> address;
 
     public long getId() {
         return id;
@@ -99,4 +100,13 @@ public class UserEntity implements Serializable {
     public void setEmailVerificationStatus(boolean emailVerificationStatus) {
         this.emailVerificationStatus = emailVerificationStatus;
     }
+
+    public List<AddressEntity> getAddress() {
+        return address;
+    }
+
+    public void setAddress(List<AddressEntity> address) {
+        this.address = address;
+    }
+
 }
