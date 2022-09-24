@@ -11,6 +11,8 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -120,6 +122,13 @@ public class Users {
 
         addressRes = mapper.map(addressDto, AddressRes.class);
 
+        Link userLink = WebMvcLinkBuilder.linkTo(Users.class).slash(userId).withRel("user");
+        Link addressesLink = WebMvcLinkBuilder.linkTo(Users.class).slash(userId).slash("addresses").withRel("addresses");
+        Link selfLink = WebMvcLinkBuilder.linkTo(Users.class).slash(userId).slash("addresses").slash(addressId).withRel("addresses");
+
+        addressRes.add(userLink);
+        addressRes.add(addressesLink);
+        addressRes.add(selfLink);
         return addressRes;
     }
 }

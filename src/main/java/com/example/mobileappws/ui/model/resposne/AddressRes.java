@@ -1,6 +1,8 @@
 package com.example.mobileappws.ui.model.resposne;
 
-public class AddressRes {
+import org.springframework.hateoas.RepresentationModel;
+
+public class AddressRes extends RepresentationModel {
     private String addressId;
     private String city;
     private String country;
