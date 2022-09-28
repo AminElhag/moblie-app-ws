@@ -38,10 +38,7 @@ public class Users {
     }
 
     @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public List<UserRes> getUsers(
-            @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "limit", defaultValue = "10") int limit
-    ) {
+    public List<UserRes> getUsers(@RequestParam(value = "page", defaultValue = "1") int page, @RequestParam(value = "limit", defaultValue = "10") int limit) {
         List<UserRes> userResList = new ArrayList<>();
 
         List<UserDto> users = userService.getUsers(page, limit);
@@ -54,9 +51,7 @@ public class Users {
         return userResList;
     }
 
-    @PostMapping(
-            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
-            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public UserRes createUser(@RequestBody UserDetailsRequestModel userDetailsRequest) {
 
         if (userDetailsRequest.getFirstName() == null || userDetailsRequest.getLastName() == null || userDetailsRequest.getEmail() == null || userDetailsRequest.getPassword() == null)
@@ -69,11 +64,7 @@ public class Users {
         return mapper.map(createdUser, UserRes.class);
     }
 
-    @PutMapping(
-            path = "/{id}",
-            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
-            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}
-    )
+    @PutMapping(path = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE}, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public UserRes updateUser(@PathVariable String id, @RequestBody UserDetailsRequestModel requestModel) {
         UserRes userRes = new UserRes();
 
@@ -117,8 +108,7 @@ public class Users {
 
         AddressDto addressDto = addressService.getAddress(userId, addressId);
 
-        if (addressDto == null)
-            throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+        if (addressDto == null) throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
 
         addressRes = mapper.map(addressDto, AddressRes.class);
 
@@ -130,5 +120,17 @@ public class Users {
         addressRes.add(addressesLink);
         addressRes.add(selfLink);
         return addressRes;
+    }
+
+    @GetMapping(path = "/email-verification", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public OperationStatusModel verificationEmail(@RequestParam(value = "token") String token) {
+        OperationStatusModel operationStatusModel = new OperationStatusModel();
+        operationStatusModel.setOperationName(OperationName.VERIFY_EMAIL.name());
+        operationStatusModel.setOperationStatue(OperationStatus.ERROR.name());
+
+        if (userService.verifyEmailToken(token)) {
+            operationStatusModel.setOperationStatue(OperationStatus.SUCCESS.name());
+        }
+        return operationStatusModel;
     }
 }
