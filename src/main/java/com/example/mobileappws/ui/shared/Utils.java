@@ -1,8 +1,13 @@
 package com.example.mobileappws.ui.shared;
 
+import com.example.mobileappws.security.SecurityConstant;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;
+import java.util.Date;
 import java.util.Random;
 
 @Component
@@ -10,6 +15,17 @@ public class Utils {
 
     private final Random RANDOM = new SecureRandom();
     private final String ALPHABET = "0123456789ABCDEFGHIGQLMONPQRSTUVWXYZabcdefghigqlmnopqrstuvwxyz";
+
+    public static boolean hasTokenExpired(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(SecurityConstant.getTokenSecret())
+                .parseClaimsJws(token).getBody();
+
+        Date claimsExpiration = claims.getExpiration();
+        Date today = new Date();
+
+        return claimsExpiration.before(today);
+    }
 
     public String generateRandomId(int length) {
         return generateRandomString(length);
@@ -23,5 +39,13 @@ public class Utils {
         }
 
         return new String(returnValue);
+    }
+
+    public String generateEmailVerificationToken(String userId) {
+        return Jwts.builder()
+                .setSubject(userId)
+                .setExpiration(new Date(System.currentTimeMillis() + SecurityConstant.EXPIRATION_EMAIL_TOKEN_TIME))
+                .signWith(SignatureAlgorithm.HS512,SecurityConstant.getTokenSecret())
+                .compact();
     }
 }

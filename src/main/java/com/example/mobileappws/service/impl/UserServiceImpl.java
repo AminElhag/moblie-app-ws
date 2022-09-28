@@ -45,13 +45,14 @@ public class UserServiceImpl implements UserService {
             AddressDto addressDto = userDto.getAddress().get(i);
             addressDto.setUserDetails(userDto);
             addressDto.setAddressId(utils.generateRandomId(30));
-            userDto.getAddress().set(i,addressDto);
+            userDto.getAddress().set(i, addressDto);
         }
 
         UserEntity userEntity = mapper.map(userDto, UserEntity.class);
         userEntity.setUserId(utils.generateRandomId(30));
         userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
-
+        userEntity.setEmailVerificationToken(utils.generateEmailVerificationToken(userEntity.getUserId()));
+        userEntity.setEmailVerificationStatus(false);
         com.example.mobileappws.io.entity.UserEntity storeUserDetails = repository.save(userEntity);
 
         return mapper.map(storeUserDetails, UserDto.class);
@@ -116,9 +117,26 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean verifyEmailToken(String token) {
+        boolean returnValue = false;
+
+        UserEntity user = repository.findUserByEmailVerificationToken(token);
+        if (user != null) {
+            boolean hasTokenExpired = Utils.hasTokenExpired(token);
+            if (!hasTokenExpired) {
+                user.setEmailVerificationToken(null);
+                user.setEmailVerificationStatus(true);
+                repository.save(user);
+                return true;
+            }
+        }
+        return returnValue;
+    }
+
+    @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         com.example.mobileappws.io.entity.UserEntity entity = repository.findByEmail(email);
         if (entity == null) throw new UsernameNotFoundException(email);
-        return new User(entity.getEmail(), entity.getEncryptedPassword(), new ArrayList<>());
+        return new User(entity.getEmail(), entity.getEncryptedPassword(), entity.isEmailVerificationStatus(), true, true, true, new ArrayList<>());
     }
 }
