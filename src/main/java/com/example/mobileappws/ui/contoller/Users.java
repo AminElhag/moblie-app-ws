@@ -3,6 +3,8 @@ package com.example.mobileappws.ui.contoller;
 import com.example.mobileappws.exception.UserServiceException;
 import com.example.mobileappws.service.AddressService;
 import com.example.mobileappws.service.UserService;
+import com.example.mobileappws.ui.model.request.PasswordResetModel;
+import com.example.mobileappws.ui.model.request.PasswordResetRequestModel;
 import com.example.mobileappws.ui.model.request.UserDetailsRequestModel;
 import com.example.mobileappws.ui.model.resposne.*;
 import com.example.mobileappws.ui.shared.dto.AddressDto;
@@ -129,6 +131,27 @@ public class Users {
         operationStatusModel.setOperationStatue(OperationStatus.ERROR.name());
 
         if (userService.verifyEmailToken(token)) {
+            operationStatusModel.setOperationStatue(OperationStatus.SUCCESS.name());
+        }
+        return operationStatusModel;
+    }
+
+    @PostMapping(path = "/password-reset-request", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public OperationStatusModel passwordResetRequest(@RequestBody PasswordResetRequestModel passwordResetRequestModel) {
+        OperationStatusModel operationStatusModel = new OperationStatusModel();
+        operationStatusModel.setOperationName(OperationName.PASSWORD_RESET_REQUEST.name());
+        operationStatusModel.setOperationStatue(OperationStatus.ERROR.name());
+        if (userService.requestPasswordReset(passwordResetRequestModel.getEmail())) {
+            operationStatusModel.setOperationStatue(OperationStatus.SUCCESS.name());
+        }
+        return operationStatusModel;
+    }
+    @PostMapping(path = "/password-reset", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public OperationStatusModel passwordReset(@RequestBody PasswordResetModel passwordResetModel) {
+        OperationStatusModel operationStatusModel = new OperationStatusModel();
+        operationStatusModel.setOperationName(OperationName.PASSWORD_RESET.name());
+        operationStatusModel.setOperationStatue(OperationStatus.ERROR.name());
+        if (userService.resetPassword(passwordResetModel.getToken(),passwordResetModel.getPassword())) {
             operationStatusModel.setOperationStatue(OperationStatus.SUCCESS.name());
         }
         return operationStatusModel;

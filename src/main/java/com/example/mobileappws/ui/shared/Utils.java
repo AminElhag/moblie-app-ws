@@ -27,6 +27,14 @@ public class Utils {
         return claimsExpiration.before(today);
     }
 
+    public static String generatePasswordResetToken(String userId) {
+        return Jwts.builder()
+                .setSubject(userId)
+                .setExpiration(new Date(System.currentTimeMillis() + SecurityConstant.EXPIRATION_PASSWORD_RESET_TOKEN_TIME))
+                .signWith(SignatureAlgorithm.HS512,SecurityConstant.getTokenSecret())
+                .compact();
+    }
+
     public String generateRandomId(int length) {
         return generateRandomString(length);
     }

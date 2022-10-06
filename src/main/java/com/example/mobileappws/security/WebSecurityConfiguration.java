@@ -41,6 +41,8 @@ public class WebSecurityConfiguration {
                                 authz
                                         .mvcMatchers(HttpMethod.POST, SecurityConstant.SING_UP_URL).permitAll()
                                         .mvcMatchers(HttpMethod.GET, SecurityConstant.VERIFICATION_EMAIL_URL).permitAll()
+                                        .mvcMatchers(HttpMethod.POST, SecurityConstant.PASSWORD_RESET_REQUEST_URL).permitAll()
+                                        .mvcMatchers(HttpMethod.POST, SecurityConstant.PASSWORD_RESET_URL).permitAll()
                                         .anyRequest().authenticated()
                                         .and()
                                         .addFilter(authenticationFilter(authenticationManager))
